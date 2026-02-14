@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -274,7 +274,7 @@ function LanguageSelector({ onSelect }: { onSelect: (lang: Language) => void }) 
   )
 }
 
-// Custom Date Picker Component
+// Custom Date Picker Component - uses a unique instance to avoid hydration issues
 function CustomDatePicker({
   value,
   onChange,
@@ -288,78 +288,94 @@ function CustomDatePicker({
   disabled?: boolean
   error?: boolean
 }) {
-  // Use local state that is initialized from value but tracks user interaction
-  const [hasUserInteracted, setHasUserInteracted] = useState(false)
+  // Generate unique ID for this instance to avoid hydration mismatches
+  const [instanceId] = useState(() => Math.random().toString(36).substring(7))
+  const [isClient, setIsClient] = useState(false)
   
-  // Derive current selection from value prop or use undefined
-  const currentYear = value?.getFullYear()
-  const currentMonth = value?.getMonth()
-  const currentDay = value?.getDate()
+  // Only render on client to avoid hydration issues
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- This is a legitimate pattern for client-side detection
+    setIsClient(true)
+  }, [])
+
+  // Derive values from the date prop
+  const yearValue = value?.getFullYear()?.toString() || ''
+  const monthValue = value?.getMonth()?.toString() || ''
+  const dayValue = value?.getDate()?.toString() || ''
 
   // Get days in selected month
   const daysInMonth = useMemo(() => {
-    const year = currentYear
-    const month = currentMonth
+    const year = yearValue ? parseInt(yearValue) : undefined
+    const month = monthValue !== '' ? parseInt(monthValue) : undefined
     if (year === undefined || month === undefined) return 31
     return new Date(year, month + 1, 0).getDate()
-  }, [currentYear, currentMonth])
+  }, [yearValue, monthValue])
 
   // Update date when a part is selected
   const handleYearChange = (yearStr: string) => {
     const year = yearStr ? parseInt(yearStr) : undefined
-    setHasUserInteracted(true)
+    const month = monthValue !== '' ? parseInt(monthValue) : undefined
+    const day = dayValue ? parseInt(dayValue) : undefined
     
-    if (year !== undefined && currentMonth !== undefined && currentDay !== undefined) {
-      const newDate = new Date(year, currentMonth, currentDay)
-      if (newDate.getFullYear() === year && newDate.getMonth() === currentMonth && newDate.getDate() === currentDay) {
-        onChange(newDate)
-      } else {
-        const lastDay = new Date(year, currentMonth + 1, 0).getDate()
-        onChange(new Date(year, currentMonth, Math.min(currentDay, lastDay)))
-      }
-    } else if (year !== undefined && currentMonth !== undefined) {
-      onChange(new Date(year, currentMonth, 1))
+    if (year !== undefined && month !== undefined && day !== undefined) {
+      const lastDay = new Date(year, month + 1, 0).getDate()
+      onChange(new Date(year, month, Math.min(day, lastDay)))
+    } else if (year !== undefined && month !== undefined) {
+      onChange(new Date(year, month, 1))
     } else {
       onChange(undefined)
     }
   }
 
   const handleMonthChange = (monthStr: string) => {
+    const year = yearValue ? parseInt(yearValue) : undefined
     const month = monthStr !== '' ? parseInt(monthStr) : undefined
-    setHasUserInteracted(true)
+    const day = dayValue ? parseInt(dayValue) : undefined
     
-    if (currentYear !== undefined && month !== undefined && currentDay !== undefined) {
-      const newDate = new Date(currentYear, month, currentDay)
-      if (newDate.getFullYear() === currentYear && newDate.getMonth() === month && newDate.getDate() === currentDay) {
-        onChange(newDate)
-      } else {
-        const lastDay = new Date(currentYear, month + 1, 0).getDate()
-        onChange(new Date(currentYear, month, Math.min(currentDay, lastDay)))
-      }
-    } else if (currentYear !== undefined && month !== undefined) {
-      onChange(new Date(currentYear, month, 1))
+    if (year !== undefined && month !== undefined && day !== undefined) {
+      const lastDay = new Date(year, month + 1, 0).getDate()
+      onChange(new Date(year, month, Math.min(day, lastDay)))
+    } else if (year !== undefined && month !== undefined) {
+      onChange(new Date(year, month, 1))
     } else {
       onChange(undefined)
     }
   }
 
   const handleDayChange = (dayStr: string) => {
+    const year = yearValue ? parseInt(yearValue) : undefined
+    const month = monthValue !== '' ? parseInt(monthValue) : undefined
     const day = dayStr ? parseInt(dayStr) : undefined
-    setHasUserInteracted(true)
     
-    if (currentYear !== undefined && currentMonth !== undefined && day !== undefined) {
-      const newDate = new Date(currentYear, currentMonth, day)
-      onChange(newDate)
+    if (year !== undefined && month !== undefined && day !== undefined) {
+      onChange(new Date(year, month, day))
     } else {
       onChange(undefined)
     }
   }
 
+  // Show placeholder during SSR to avoid hydration mismatch
+  if (!isClient) {
+    return (
+      <div className="flex gap-2">
+        <div className={`flex-1 h-10 px-3 py-2 rounded-md border bg-background ${error ? 'border-red-500' : 'border-input'}`}>
+          <span className="text-muted-foreground">{t.selectYear}</span>
+        </div>
+        <div className={`flex-1 h-10 px-3 py-2 rounded-md border bg-background ${error ? 'border-red-500' : 'border-input'}`}>
+          <span className="text-muted-foreground">{t.selectMonth}</span>
+        </div>
+        <div className={`w-20 h-10 px-3 py-2 rounded-md border bg-background ${error ? 'border-red-500' : 'border-input'}`}>
+          <span className="text-muted-foreground">{t.selectDay}</span>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2" key={instanceId}>
       {/* Year */}
       <Select
-        value={currentYear?.toString() || ''}
+        value={yearValue}
         onValueChange={handleYearChange}
         disabled={disabled}
       >
@@ -377,7 +393,7 @@ function CustomDatePicker({
 
       {/* Month */}
       <Select
-        value={currentMonth?.toString() || ''}
+        value={monthValue}
         onValueChange={handleMonthChange}
         disabled={disabled}
       >
@@ -395,7 +411,7 @@ function CustomDatePicker({
 
       {/* Day */}
       <Select
-        value={currentDay?.toString() || ''}
+        value={dayValue}
         onValueChange={handleDayChange}
         disabled={disabled}
       >
