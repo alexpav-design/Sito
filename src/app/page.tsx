@@ -274,7 +274,7 @@ function LanguageSelector({ onSelect }: { onSelect: (lang: Language) => void }) 
   )
 }
 
-// Custom Date Picker Component - uses a unique instance to avoid hydration issues
+// Custom Date Picker Component - uses native HTML selects for maximum compatibility
 function CustomDatePicker({
   value,
   onChange,
@@ -288,16 +288,6 @@ function CustomDatePicker({
   disabled?: boolean
   error?: boolean
 }) {
-  // Generate unique ID for this instance to avoid hydration mismatches
-  const [instanceId] = useState(() => Math.random().toString(36).substring(7))
-  const [isClient, setIsClient] = useState(false)
-  
-  // Only render on client to avoid hydration issues
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- This is a legitimate pattern for client-side detection
-    setIsClient(true)
-  }, [])
-
   // Derive values from the date prop
   const yearValue = value?.getFullYear()?.toString() || ''
   const monthValue = value?.getMonth()?.toString() || ''
@@ -312,7 +302,8 @@ function CustomDatePicker({
   }, [yearValue, monthValue])
 
   // Update date when a part is selected
-  const handleYearChange = (yearStr: string) => {
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const yearStr = e.target.value
     const year = yearStr ? parseInt(yearStr) : undefined
     const month = monthValue !== '' ? parseInt(monthValue) : undefined
     const day = dayValue ? parseInt(dayValue) : undefined
@@ -327,7 +318,8 @@ function CustomDatePicker({
     }
   }
 
-  const handleMonthChange = (monthStr: string) => {
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const monthStr = e.target.value
     const year = yearValue ? parseInt(yearValue) : undefined
     const month = monthStr !== '' ? parseInt(monthStr) : undefined
     const day = dayValue ? parseInt(dayValue) : undefined
@@ -342,7 +334,8 @@ function CustomDatePicker({
     }
   }
 
-  const handleDayChange = (dayStr: string) => {
+  const handleDayChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const dayStr = e.target.value
     const year = yearValue ? parseInt(yearValue) : undefined
     const month = monthValue !== '' ? parseInt(monthValue) : undefined
     const day = dayStr ? parseInt(dayStr) : undefined
@@ -354,78 +347,57 @@ function CustomDatePicker({
     }
   }
 
-  // Show placeholder during SSR to avoid hydration mismatch
-  if (!isClient) {
-    return (
-      <div className="flex gap-2">
-        <div className={`flex-1 h-10 px-3 py-2 rounded-md border bg-background ${error ? 'border-red-500' : 'border-input'}`}>
-          <span className="text-muted-foreground">{t.selectYear}</span>
-        </div>
-        <div className={`flex-1 h-10 px-3 py-2 rounded-md border bg-background ${error ? 'border-red-500' : 'border-input'}`}>
-          <span className="text-muted-foreground">{t.selectMonth}</span>
-        </div>
-        <div className={`w-20 h-10 px-3 py-2 rounded-md border bg-background ${error ? 'border-red-500' : 'border-input'}`}>
-          <span className="text-muted-foreground">{t.selectDay}</span>
-        </div>
-      </div>
-    )
-  }
+  const selectClassName = `flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${error ? 'border-red-500' : ''}`
 
   return (
-    <div className="flex gap-2" key={instanceId}>
+    <div className="flex gap-2">
       {/* Year */}
-      <Select
+      <select
         value={yearValue}
-        onValueChange={handleYearChange}
+        onChange={handleYearChange}
         disabled={disabled}
+        className={selectClassName}
+        style={{ minWidth: '100px' }}
       >
-        <SelectTrigger className={`flex-1 ${error ? 'border-red-500' : ''}`}>
-          <SelectValue placeholder={t.selectYear} />
-        </SelectTrigger>
-        <SelectContent className="max-h-60">
-          {yearOptions.map((year) => (
-            <SelectItem key={year} value={year.toString()}>
-              {year}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <option value="">{t.selectYear}</option>
+        {yearOptions.map((year) => (
+          <option key={year} value={year.toString()}>
+            {year}
+          </option>
+        ))}
+      </select>
 
       {/* Month */}
-      <Select
+      <select
         value={monthValue}
-        onValueChange={handleMonthChange}
+        onChange={handleMonthChange}
         disabled={disabled}
+        className={selectClassName}
+        style={{ minWidth: '120px' }}
       >
-        <SelectTrigger className={`flex-1 ${error ? 'border-red-500' : ''}`}>
-          <SelectValue placeholder={t.selectMonth} />
-        </SelectTrigger>
-        <SelectContent className="max-h-60">
-          {getMonthOptions(t).map((month) => (
-            <SelectItem key={month.value} value={month.value}>
-              {month.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <option value="">{t.selectMonth}</option>
+        {getMonthOptions(t).map((month) => (
+          <option key={month.value} value={month.value}>
+            {month.label}
+          </option>
+        ))}
+      </select>
 
       {/* Day */}
-      <Select
+      <select
         value={dayValue}
-        onValueChange={handleDayChange}
+        onChange={handleDayChange}
         disabled={disabled}
+        className={selectClassName}
+        style={{ width: '80px' }}
       >
-        <SelectTrigger className={`w-20 ${error ? 'border-red-500' : ''}`}>
-          <SelectValue placeholder={t.selectDay} />
-        </SelectTrigger>
-        <SelectContent className="max-h-60">
-          {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
-            <SelectItem key={day} value={day.toString()}>
-              {day}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <option value="">{t.selectDay}</option>
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
+          <option key={day} value={day.toString()}>
+            {day}
+          </option>
+        ))}
+      </select>
     </div>
   )
 }
