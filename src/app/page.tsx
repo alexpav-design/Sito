@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -274,7 +274,7 @@ function LanguageSelector({ onSelect }: { onSelect: (lang: Language) => void }) 
   )
 }
 
-// Custom Date Picker Component - uses native HTML selects for maximum compatibility
+// Custom Date Picker Component - uses native HTML selects with local state
 function CustomDatePicker({
   value,
   onChange,
@@ -288,63 +288,59 @@ function CustomDatePicker({
   disabled?: boolean
   error?: boolean
 }) {
-  // Derive values from the date prop
-  const yearValue = value?.getFullYear()?.toString() || ''
-  const monthValue = value?.getMonth()?.toString() || ''
-  const dayValue = value?.getDate()?.toString() || ''
+  // Local state for each field - managed locally
+  const [year, setYear] = useState<string>('')
+  const [month, setMonth] = useState<string>('')
+  const [day, setDay] = useState<string>('')
+  
+  // Initialize from prop on mount
+  useEffect(() => {
+    if (value) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync external value to local state
+      setYear(value.getFullYear().toString())
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync external value to local state
+      setMonth(value.getMonth().toString())
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync external value to local state
+      setDay(value.getDate().toString())
+    }
+  }, [value])
 
   // Get days in selected month
   const daysInMonth = useMemo(() => {
-    const year = yearValue ? parseInt(yearValue) : undefined
-    const month = monthValue !== '' ? parseInt(monthValue) : undefined
-    if (year === undefined || month === undefined) return 31
-    return new Date(year, month + 1, 0).getDate()
-  }, [yearValue, monthValue])
+    const y = year ? parseInt(year) : new Date().getFullYear()
+    const m = month !== '' ? parseInt(month) : 0
+    return new Date(y, m + 1, 0).getDate()
+  }, [year, month])
 
-  // Update date when a part is selected
-  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const yearStr = e.target.value
-    const year = yearStr ? parseInt(yearStr) : undefined
-    const month = monthValue !== '' ? parseInt(monthValue) : undefined
-    const day = dayValue ? parseInt(dayValue) : undefined
-    
-    if (year !== undefined && month !== undefined && day !== undefined) {
-      const lastDay = new Date(year, month + 1, 0).getDate()
-      onChange(new Date(year, month, Math.min(day, lastDay)))
-    } else if (year !== undefined && month !== undefined) {
-      onChange(new Date(year, month, 1))
+  // Update parent when all fields are selected
+  const updateDate = useCallback((y: string, m: string, d: string) => {
+    if (y && m !== '' && d) {
+      onChange(new Date(parseInt(y), parseInt(m), parseInt(d)))
     } else {
       onChange(undefined)
     }
+  }, [onChange])
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newYear = e.target.value
+    setYear(newYear)
+    updateDate(newYear, month, day)
   }
 
   const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const monthStr = e.target.value
-    const year = yearValue ? parseInt(yearValue) : undefined
-    const month = monthStr !== '' ? parseInt(monthStr) : undefined
-    const day = dayValue ? parseInt(dayValue) : undefined
-    
-    if (year !== undefined && month !== undefined && day !== undefined) {
-      const lastDay = new Date(year, month + 1, 0).getDate()
-      onChange(new Date(year, month, Math.min(day, lastDay)))
-    } else if (year !== undefined && month !== undefined) {
-      onChange(new Date(year, month, 1))
-    } else {
-      onChange(undefined)
-    }
+    const newMonth = e.target.value
+    setMonth(newMonth)
+    // Adjust day if necessary
+    const maxDay = new Date(year ? parseInt(year) : new Date().getFullYear(), parseInt(newMonth) + 1, 0).getDate()
+    const adjustedDay = day && parseInt(day) > maxDay ? maxDay.toString() : day
+    if (adjustedDay !== day) setDay(adjustedDay)
+    updateDate(year, newMonth, adjustedDay)
   }
 
   const handleDayChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const dayStr = e.target.value
-    const year = yearValue ? parseInt(yearValue) : undefined
-    const month = monthValue !== '' ? parseInt(monthValue) : undefined
-    const day = dayStr ? parseInt(dayStr) : undefined
-    
-    if (year !== undefined && month !== undefined && day !== undefined) {
-      onChange(new Date(year, month, day))
-    } else {
-      onChange(undefined)
-    }
+    const newDay = e.target.value
+    setDay(newDay)
+    updateDate(year, month, newDay)
   }
 
   const selectClassName = `flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${error ? 'border-red-500' : ''}`
@@ -353,48 +349,48 @@ function CustomDatePicker({
     <div className="flex gap-2">
       {/* Year */}
       <select
-        value={yearValue}
+        value={year}
         onChange={handleYearChange}
         disabled={disabled}
         className={selectClassName}
         style={{ minWidth: '100px' }}
       >
         <option value="">{t.selectYear}</option>
-        {yearOptions.map((year) => (
-          <option key={year} value={year.toString()}>
-            {year}
+        {yearOptions.map((yr) => (
+          <option key={yr} value={yr.toString()}>
+            {yr}
           </option>
         ))}
       </select>
 
       {/* Month */}
       <select
-        value={monthValue}
+        value={month}
         onChange={handleMonthChange}
         disabled={disabled}
         className={selectClassName}
         style={{ minWidth: '120px' }}
       >
         <option value="">{t.selectMonth}</option>
-        {getMonthOptions(t).map((month) => (
-          <option key={month.value} value={month.value}>
-            {month.label}
+        {getMonthOptions(t).map((mo) => (
+          <option key={mo.value} value={mo.value}>
+            {mo.label}
           </option>
         ))}
       </select>
 
       {/* Day */}
       <select
-        value={dayValue}
+        value={day}
         onChange={handleDayChange}
         disabled={disabled}
         className={selectClassName}
         style={{ width: '80px' }}
       >
         <option value="">{t.selectDay}</option>
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
-          <option key={day} value={day.toString()}>
-            {day}
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => (
+          <option key={d} value={d.toString()}>
+            {d}
           </option>
         ))}
       </select>
