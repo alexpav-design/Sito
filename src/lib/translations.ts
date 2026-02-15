@@ -14,6 +14,9 @@ export const translations = {
     // Header
     title: "Registrazione Ospiti",
     subtitle: "Compila il modulo con i tuoi dati per completare la registrazione",
+    legalInfo: "Dati raccolti in ottemperanza al decreto Legge 933/2021, per maggiori informazioni:",
+    legalLink: "https://www.boe.es/eli/es/rd/2021/10/26/933",
+    allGuestsRequired: "Il modulo deve essere compilato per tutti gli ospiti!",
     
     // Language selection
     selectLanguage: "Seleziona Lingua",
@@ -70,6 +73,7 @@ export const translations = {
     idCard: "Carta di identità",
     passport: "Passaporto",
     spanishIdCard: "Carta di identità spagnola",
+    nie: "NIE (Numero Identità Straniero)",
     
     // Gender
     gender: "Sesso",
@@ -148,6 +152,9 @@ export const translations = {
     // Header
     title: "Guest Registration",
     subtitle: "Fill out the form with your details to complete registration",
+    legalInfo: "Data collected in compliance with Decree Law 933/2021, for more information:",
+    legalLink: "https://www.boe.es/eli/es/rd/2021/10/26/933",
+    allGuestsRequired: "The form must be completed for all guests!",
     
     // Language selection
     selectLanguage: "Select Language",
@@ -204,6 +211,7 @@ export const translations = {
     idCard: "Identity Card",
     passport: "Passport",
     spanishIdCard: "Spanish Identity Card",
+    nie: "NIE (Foreigner Identity Number)",
     
     // Gender
     gender: "Gender",
@@ -282,6 +290,9 @@ export const translations = {
     // Header
     title: "Registro de Huéspedes",
     subtitle: "Complete el formulario con sus datos para finalizar el registro",
+    legalInfo: "Datos recopilados en cumplimiento del Decreto Ley 933/2021, para más información:",
+    legalLink: "https://www.boe.es/eli/es/rd/2021/10/26/933",
+    allGuestsRequired: "¡El formulario debe ser completado para todos los huéspedes!",
     
     // Language selection
     selectLanguage: "Seleccionar Idioma",
@@ -338,6 +349,7 @@ export const translations = {
     idCard: "Documento Nacional de Identidad",
     passport: "Pasaporte",
     spanishIdCard: "DNI Español",
+    nie: "NIE (Número de Identidad de Extranjero)",
     
     // Gender
     gender: "Sexo",
@@ -416,6 +428,9 @@ export const translations = {
     // Header
     title: "Enregistrement des Invités",
     subtitle: "Remplissez le formulaire avec vos informations pour compléter l'enregistrement",
+    legalInfo: "Données collectées conformément au décret-loi 933/2021, pour plus d'informations:",
+    legalLink: "https://www.boe.es/eli/es/rd/2021/10/26/933",
+    allGuestsRequired: "Le formulaire doit être rempli pour tous les invités!",
     
     // Language selection
     selectLanguage: "Sélectionner la Langue",
@@ -472,6 +487,7 @@ export const translations = {
     idCard: "Carte d'Identité",
     passport: "Passeport",
     spanishIdCard: "Carte d'Identité Espagnole",
+    nie: "NIE (Numéro d'Identité Étranger)",
     
     // Gender
     gender: "Sexe",
@@ -550,6 +566,9 @@ export const translations = {
     // Header
     title: "Gäste-Registrierung",
     subtitle: "Füllen Sie das Formular mit Ihren Daten aus, um die Registrierung abzuschließen",
+    legalInfo: "Daten erhoben gemäß Dekretgesetz 933/2021, für weitere Informationen:",
+    legalLink: "https://www.boe.es/eli/es/rd/2021/10/26/933",
+    allGuestsRequired: "Das Formular muss für alle Gäste ausgefüllt werden!",
     
     // Language selection
     selectLanguage: "Sprache Auswählen",
@@ -606,6 +625,7 @@ export const translations = {
     idCard: "Personalausweis",
     passport: "Reisepass",
     spanishIdCard: "Spanischer Personalausweis",
+    nie: "NIE (Ausländeridentitätsnummer)",
     
     // Gender
     gender: "Geschlecht",
@@ -684,6 +704,9 @@ export const translations = {
     // Header
     title: "Регистрация Гостей",
     subtitle: "Заполните форму своими данными для завершения регистрации",
+    legalInfo: "Данные собраны в соответствии с декретом-законом 933/2021, для дополнительной информации:",
+    legalLink: "https://www.boe.es/eli/es/rd/2021/10/26/933",
+    allGuestsRequired: "Форма должна быть заполнена для всех гостей!",
     
     // Language selection
     selectLanguage: "Выбрать Язык",
@@ -740,6 +763,7 @@ export const translations = {
     idCard: "Удостоверение Личности",
     passport: "Паспорт",
     spanishIdCard: "Испанское Удостоверение Личности",
+    nie: "NIE (Идентификационный номер иностранца)",
     
     // Gender
     gender: "Пол",
