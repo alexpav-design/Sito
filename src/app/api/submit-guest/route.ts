@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
-import path from 'path'
+import { google } from 'googleapis'
 import ZAI from 'z-ai-web-dev-sdk'
 import { translations, type Language } from '@/lib/translations'
 
@@ -130,7 +128,7 @@ async function generateFormattedSummary(data: Record<string, unknown>, language:
 PERSONAL DATA:
 - Name: ${data.nome}
 - Surname: ${data.cognome}
- ${data.secondoCognome ? `- Second Surname: ${data.secondoCognome}` : ''}
+${data.secondoCognome ? `- Second Surname: ${data.secondoCognome}` : ''}
 - Nationality: ${data.nazionalita}
 - Date of birth: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT') : 'Not specified'}
 - Gender: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'Not specified'}
@@ -142,7 +140,7 @@ CONTACTS:
 DOCUMENT:
 - Type: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'Not specified'}
 - Document Number: ${data.numeroDocumento || 'Not specified'}
- ${data.tipoDocumento === 'carta_identita_spagnola' ? `- Support Number: ${data.numeroSupporto}` : ''}
+${data.tipoDocumento === 'carta_identita_spagnola' ? `- Support Number: ${data.numeroSupporto}` : ''}
 
 ADDRESS:
 - Street: ${data.via}
@@ -152,7 +150,7 @@ ADDRESS:
 CHECK-IN:
 - Arrival date: ${data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT') : 'Not specified'}
 
- ${data.presenzaMinorenni ? `MINORS:
+${data.presenzaMinorenni ? `MINORS:
 - Minors present: Yes
 - Family relations: ${data.relazioniFamigliari}` : '- Minors present: No'}
 
@@ -198,47 +196,112 @@ function generateBasicSummary(data: Record<string, unknown>, language: Language)
   const dateLocale = language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT'
   
   return `
- ${t.title.toUpperCase()}
- ${'='.repeat(40)}
+${t.title.toUpperCase()}
+${'='.repeat(40)}
 
- ${t.personalData.toUpperCase()}
- ${'-'.repeat(20)}
- ${t.name}: ${data.nome}
- ${t.surname}: ${data.cognome}
- ${data.secondoCognome ? `${t.secondSurname}: ${data.secondoCognome}` : ''}
- ${t.nationality}: ${data.nazionalita}
- ${t.birthDate}: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : 'N/A'}
- ${t.gender}: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'N/A'}
+${t.personalData.toUpperCase()}
+${'-'.repeat(20)}
+${t.name}: ${data.nome}
+${t.surname}: ${data.cognome}
+${data.secondoCognome ? `${t.secondSurname}: ${data.secondoCognome}` : ''}
+${t.nationality}: ${data.nazionalita}
+${t.birthDate}: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : 'N/A'}
+${t.gender}: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'N/A'}
 
- ${t.contacts.toUpperCase()}
- ${'-'.repeat(20)}
- ${t.email}: ${data.email}
- ${t.phone}: ${data.telefono}
+${t.contacts.toUpperCase()}
+${'-'.repeat(20)}
+${t.email}: ${data.email}
+${t.phone}: ${data.telefono}
 
- ${t.document.toUpperCase()}
- ${'-'.repeat(20)}
- ${t.documentType}: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'N/A'}
- ${t.documentNumber}: ${data.numeroDocumento || 'N/A'}
- ${data.tipoDocumento === 'carta_identita_spagnola' ? `${t.supportNumber}: ${data.numeroSupporto}` : ''}
+${t.document.toUpperCase()}
+${'-'.repeat(20)}
+${t.documentType}: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'N/A'}
+${t.documentNumber}: ${data.numeroDocumento || 'N/A'}
+${data.tipoDocumento === 'carta_identita_spagnola' ? `${t.supportNumber}: ${data.numeroSupporto}` : ''}
 
- ${t.address.toUpperCase()}
- ${'-'.repeat(20)}
- ${t.street}: ${data.via}
- ${t.city}: ${data.citta}
- ${t.postalCode}: ${data.cap}
+${t.address.toUpperCase()}
+${'-'.repeat(20)}
+${t.street}: ${data.via}
+${t.city}: ${data.citta}
+${t.postalCode}: ${data.cap}
 
- ${t.checkin.toUpperCase()}
- ${'-'.repeat(20)}
- ${t.checkinDate}: ${data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(dateLocale) : 'N/A'}
+${t.checkin.toUpperCase()}
+${'-'.repeat(20)}
+${t.checkinDate}: ${data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(dateLocale) : 'N/A'}
 
- ${data.presenzaMinorenni ? `${t.minors.toUpperCase()}
- ${'-'.repeat(20)}
- ${t.minorsPresent}: ✓
- ${t.familyRelations}: ${data.relazioniFamigliari}` : `${t.minors.toUpperCase()}\n${'-'.repeat(20)}\n${t.minorsPresent}: ✗`}
+${data.presenzaMinorenni ? `${t.minors.toUpperCase()}
+${'-'.repeat(20)}
+${t.minorsPresent}: ✓
+${t.familyRelations}: ${data.relazioniFamigliari}` : `${t.minors.toUpperCase()}\n${'-'.repeat(20)}\n${t.minorsPresent}: ✗`}
 
- ${'='.repeat(40)}
- ${new Date().toLocaleString(dateLocale)}
+${'='.repeat(40)}
+${new Date().toLocaleString(dateLocale)}
 `
+}
+
+// Funzione per scrivere su Google Sheets
+async function appendToGoogleSheet(data: Record<string, unknown>): Promise<boolean> {
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    })
+
+    const sheets = google.sheets({ version: 'v4', auth })
+    
+    // Prepara la riga di dati
+    const documentTypeLabels: Record<string, string> = {
+      'carta_identita': 'Carta d\'identità',
+      'passaporto': 'Passaporto',
+      'carta_identita_spagnola': 'Carta d\'identità spagnola',
+    }
+    
+    const genderLabels: Record<string, string> = {
+      'M': 'Maschio',
+      'F': 'Femmina',
+      'Altro': 'Altro',
+    }
+    
+    const dateLocale = 'it-IT'
+    
+    const row = [
+      new Date().toLocaleString(dateLocale),                              // Data registrazione
+      data.nome || '',                                                     // Nome
+      data.cognome || '',                                                  // Cognome
+      data.secondoCognome || '',                                           // Secondo Cognome
+      data.nazionalita || '',                                              // Nazionalità
+      data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : '', // Data Nascita
+      data.email || '',                                                    // Email
+      data.telefono || '',                                                 // Telefono
+      data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : '', // Tipo Documento
+      data.numeroDocumento || '',                                          // Numero Documento
+      data.numeroSupporto || '',                                           // Numero Supporto
+      data.sesso ? genderLabels[data.sesso as string] || data.sesso : '',  // Sesso
+      data.via || '',                                                      // Indirizzo
+      data.citta || '',                                                    // Città
+      data.cap || '',                                                      // CAP
+      data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(dateLocale) : '', // Data Check-in
+      data.presenzaMinorenni ? 'Sì' : 'No',                                // Minori presenti
+      data.relazioniFamigliari || '',                                      // Relazioni famigliari
+    ]
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: 'Foglio1!A:R', // Colonne A-R (18 colonne)
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [row],
+      },
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error writing to Google Sheets:', error)
+    return false
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -259,40 +322,20 @@ export async function POST(request: NextRequest) {
     // Genera il riepilogo formattato
     const summary = await generateFormattedSummary(body, language)
     
-    // Prepara i dati da salvare
-    const submissionData = {
-      ...body,
-      submittedAt: new Date().toISOString(),
-      summary,
+    // Scrivi su Google Sheets
+    const sheetSuccess = await appendToGoogleSheet(body)
+    
+    if (!sheetSuccess) {
+      console.error('Failed to write to Google Sheets')
     }
     
-    // Crea la cartella data se non esiste
-    // Su Vercel usiamo /tmp che è scrivibile
-    const isVercel = process.env.VERCEL === '1'
-    const dataDir = isVercel 
-      ? path.join('/tmp', 'guest-data')
-      : path.join(process.cwd(), 'data')
-    
-    if (!existsSync(dataDir)) {
-      await mkdir(dataDir, { recursive: true })
-    }
-    
-    // Genera un nome file unico basato sul timestamp e nome ospite
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const fileName = `guest_${body.nome}_${body.cognome}_${timestamp}.json`
-    const filePath = path.join(dataDir, fileName)
-    
-    // Salva i dati in formato JSON
-    await writeFile(filePath, JSON.stringify(submissionData, null, 2), 'utf-8')
-    
-    // Log per simulare l'invio email
+    // Log per debug
     console.log('=====================================')
-    console.log('GUEST REGISTRATION SAVED')
+    console.log('GUEST REGISTRATION')
     console.log('=====================================')
-    console.log(`File: ${fileName}`)
     console.log(`Guest: ${body.nome} ${body.cognome}${body.secondoCognome ? ` ${body.secondoCognome}` : ''}`)
     console.log(`Email: ${body.email}`)
-    console.log(`Document Number: ${body.numeroDocumento}`)
+    console.log(`Google Sheets: ${sheetSuccess ? 'OK' : 'FAILED'}`)
     console.log('-------------------------------------')
     console.log(summary)
     console.log('=====================================')
@@ -300,7 +343,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: t.successTitle,
-      fileName,
       summary,
     })
     
