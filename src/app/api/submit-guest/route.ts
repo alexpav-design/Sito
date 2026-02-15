@@ -130,7 +130,7 @@ async function generateFormattedSummary(data: Record<string, unknown>, language:
 PERSONAL DATA:
 - Name: ${data.nome}
 - Surname: ${data.cognome}
-${data.secondoCognome ? `- Second Surname: ${data.secondoCognome}` : ''}
+ ${data.secondoCognome ? `- Second Surname: ${data.secondoCognome}` : ''}
 - Nationality: ${data.nazionalita}
 - Date of birth: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT') : 'Not specified'}
 - Gender: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'Not specified'}
@@ -142,7 +142,7 @@ CONTACTS:
 DOCUMENT:
 - Type: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'Not specified'}
 - Document Number: ${data.numeroDocumento || 'Not specified'}
-${data.tipoDocumento === 'carta_identita_spagnola' ? `- Support Number: ${data.numeroSupporto}` : ''}
+ ${data.tipoDocumento === 'carta_identita_spagnola' ? `- Support Number: ${data.numeroSupporto}` : ''}
 
 ADDRESS:
 - Street: ${data.via}
@@ -152,7 +152,7 @@ ADDRESS:
 CHECK-IN:
 - Arrival date: ${data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT') : 'Not specified'}
 
-${data.presenzaMinorenni ? `MINORS:
+ ${data.presenzaMinorenni ? `MINORS:
 - Minors present: Yes
 - Family relations: ${data.relazioniFamigliari}` : '- Minors present: No'}
 
@@ -198,46 +198,46 @@ function generateBasicSummary(data: Record<string, unknown>, language: Language)
   const dateLocale = language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT'
   
   return `
-${t.title.toUpperCase()}
-${'='.repeat(40)}
+ ${t.title.toUpperCase()}
+ ${'='.repeat(40)}
 
-${t.personalData.toUpperCase()}
-${'-'.repeat(20)}
-${t.name}: ${data.nome}
-${t.surname}: ${data.cognome}
-${data.secondoCognome ? `${t.secondSurname}: ${data.secondoCognome}` : ''}
-${t.nationality}: ${data.nazionalita}
-${t.birthDate}: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : 'N/A'}
-${t.gender}: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'N/A'}
+ ${t.personalData.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.name}: ${data.nome}
+ ${t.surname}: ${data.cognome}
+ ${data.secondoCognome ? `${t.secondSurname}: ${data.secondoCognome}` : ''}
+ ${t.nationality}: ${data.nazionalita}
+ ${t.birthDate}: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : 'N/A'}
+ ${t.gender}: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'N/A'}
 
-${t.contacts.toUpperCase()}
-${'-'.repeat(20)}
-${t.email}: ${data.email}
-${t.phone}: ${data.telefono}
+ ${t.contacts.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.email}: ${data.email}
+ ${t.phone}: ${data.telefono}
 
-${t.document.toUpperCase()}
-${'-'.repeat(20)}
-${t.documentType}: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'N/A'}
-${t.documentNumber}: ${data.numeroDocumento || 'N/A'}
-${data.tipoDocumento === 'carta_identita_spagnola' ? `${t.supportNumber}: ${data.numeroSupporto}` : ''}
+ ${t.document.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.documentType}: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'N/A'}
+ ${t.documentNumber}: ${data.numeroDocumento || 'N/A'}
+ ${data.tipoDocumento === 'carta_identita_spagnola' ? `${t.supportNumber}: ${data.numeroSupporto}` : ''}
 
-${t.address.toUpperCase()}
-${'-'.repeat(20)}
-${t.street}: ${data.via}
-${t.city}: ${data.citta}
-${t.postalCode}: ${data.cap}
+ ${t.address.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.street}: ${data.via}
+ ${t.city}: ${data.citta}
+ ${t.postalCode}: ${data.cap}
 
-${t.checkin.toUpperCase()}
-${'-'.repeat(20)}
-${t.checkinDate}: ${data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(dateLocale) : 'N/A'}
+ ${t.checkin.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.checkinDate}: ${data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(dateLocale) : 'N/A'}
 
-${data.presenzaMinorenni ? `${t.minors.toUpperCase()}
-${'-'.repeat(20)}
-${t.minorsPresent}: ✓
-${t.familyRelations}: ${data.relazioniFamigliari}` : `${t.minors.toUpperCase()}\n${'-'.repeat(20)}\n${t.minorsPresent}: ✗`}
+ ${data.presenzaMinorenni ? `${t.minors.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.minorsPresent}: ✓
+ ${t.familyRelations}: ${data.relazioniFamigliari}` : `${t.minors.toUpperCase()}\n${'-'.repeat(20)}\n${t.minorsPresent}: ✗`}
 
-${'='.repeat(40)}
-${new Date().toLocaleString(dateLocale)}
+ ${'='.repeat(40)}
+ ${new Date().toLocaleString(dateLocale)}
 `
 }
 
@@ -267,7 +267,12 @@ export async function POST(request: NextRequest) {
     }
     
     // Crea la cartella data se non esiste
-    const dataDir = path.join(process.cwd(), 'data')
+    // Su Vercel usiamo /tmp che è scrivibile
+    const isVercel = process.env.VERCEL === '1'
+    const dataDir = isVercel 
+      ? path.join('/tmp', 'guest-data')
+      : path.join(process.cwd(), 'data')
+    
     if (!existsSync(dataDir)) {
       await mkdir(dataDir, { recursive: true })
     }
