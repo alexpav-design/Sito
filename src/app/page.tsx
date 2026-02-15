@@ -235,6 +235,9 @@ const getGenders = (t: Translations) => [
 const currentYear = new Date().getFullYear()
 const yearOptions = Array.from({ length: currentYear - 1924 }, (_, i) => currentYear - i)
 
+// Year options for check-in (current year and next year only)
+const checkinYearOptions = [currentYear, currentYear + 1]
+
 // Month options
 const getMonthOptions = (t: Translations) => t.months.map((month, index) => ({
   value: index.toString(),
