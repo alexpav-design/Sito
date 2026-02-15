@@ -15,220 +15,28 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 
 import { translations, languageNames, type Language, type Translations } from '@/lib/translations'
+import { countries, getCountryName } from '@/lib/countries'
 
-// Complete list of all 195 UN recognized countries with ISO 3166-1 alpha-2 codes
-// Sorted alphabetically in Italian
-const countries = [
-  { value: 'AF', label: 'Afghanistan' },
-  { value: 'AL', label: 'Albania' },
-  { value: 'DZ', label: 'Algeria' },
-  { value: 'AD', label: 'Andorra' },
-  { value: 'AO', label: 'Angola' },
-  { value: 'AG', label: 'Antigua e Barbuda' },
-  { value: 'AR', label: 'Argentina' },
-  { value: 'AM', label: 'Armenia' },
-  { value: 'AU', label: 'Australia' },
-  { value: 'AT', label: 'Austria' },
-  { value: 'AZ', label: 'Azerbaijan' },
-  { value: 'BS', label: 'Bahamas' },
-  { value: 'BH', label: 'Bahrain' },
-  { value: 'BD', label: 'Bangladesh' },
-  { value: 'BB', label: 'Barbados' },
-  { value: 'BY', label: 'Bielorussia' },
-  { value: 'BE', label: 'Belgio' },
-  { value: 'BZ', label: 'Belize' },
-  { value: 'BJ', label: 'Benin' },
-  { value: 'BT', label: 'Bhutan' },
-  { value: 'BO', label: 'Bolivia' },
-  { value: 'BA', label: 'Bosnia ed Erzegovina' },
-  { value: 'BW', label: 'Botswana' },
-  { value: 'BR', label: 'Brasile' },
-  { value: 'BN', label: 'Brunei' },
-  { value: 'BG', label: 'Bulgaria' },
-  { value: 'BF', label: 'Burkina Faso' },
-  { value: 'BI', label: 'Burundi' },
-  { value: 'KH', label: 'Cambogia' },
-  { value: 'CM', label: 'Camerun' },
-  { value: 'CA', label: 'Canada' },
-  { value: 'CV', label: 'Capo Verde' },
-  { value: 'CF', label: 'Repubblica Centrafricana' },
-  { value: 'TD', label: 'Ciad' },
-  { value: 'CL', label: 'Cile' },
-  { value: 'CN', label: 'Cina' },
-  { value: 'CO', label: 'Colombia' },
-  { value: 'KM', label: 'Comore' },
-  { value: 'CG', label: 'Congo' },
-  { value: 'CD', label: 'Repubblica Democratica del Congo' },
-  { value: 'CR', label: 'Costa Rica' },
-  { value: 'CI', label: 'Costa d\'Avorio' },
-  { value: 'HR', label: 'Croazia' },
-  { value: 'CU', label: 'Cuba' },
-  { value: 'CY', label: 'Cipro' },
-  { value: 'CZ', label: 'Repubblica Ceca' },
-  { value: 'DK', label: 'Danimarca' },
-  { value: 'DJ', label: 'Gibuti' },
-  { value: 'DM', label: 'Dominica' },
-  { value: 'DO', label: 'Repubblica Dominicana' },
-  { value: 'EC', label: 'Ecuador' },
-  { value: 'EG', label: 'Egitto' },
-  { value: 'SV', label: 'El Salvador' },
-  { value: 'GQ', label: 'Guinea Equatoriale' },
-  { value: 'ER', label: 'Eritrea' },
-  { value: 'EE', label: 'Estonia' },
-  { value: 'SZ', label: 'Eswatini' },
-  { value: 'ET', label: 'Etiopia' },
-  { value: 'FJ', label: 'Figi' },
-  { value: 'FI', label: 'Finlandia' },
-  { value: 'FR', label: 'Francia' },
-  { value: 'GA', label: 'Gabon' },
-  { value: 'GM', label: 'Gambia' },
-  { value: 'GE', label: 'Georgia' },
-  { value: 'DE', label: 'Germania' },
-  { value: 'GH', label: 'Ghana' },
-  { value: 'GR', label: 'Grecia' },
-  { value: 'GD', label: 'Grenada' },
-  { value: 'GT', label: 'Guatemala' },
-  { value: 'GN', label: 'Guinea' },
-  { value: 'GW', label: 'Guinea-Bissau' },
-  { value: 'GY', label: 'Guyana' },
-  { value: 'HT', label: 'Haiti' },
-  { value: 'HN', label: 'Honduras' },
-  { value: 'HU', label: 'Ungheria' },
-  { value: 'IS', label: 'Islanda' },
-  { value: 'IN', label: 'India' },
-  { value: 'ID', label: 'Indonesia' },
-  { value: 'IR', label: 'Iran' },
-  { value: 'IQ', label: 'Iraq' },
-  { value: 'IE', label: 'Irlanda' },
-  { value: 'IL', label: 'Israele' },
-  { value: 'IT', label: 'Italia' },
-  { value: 'JM', label: 'Giamaica' },
-  { value: 'JP', label: 'Giappone' },
-  { value: 'JO', label: 'Giordania' },
-  { value: 'KZ', label: 'Kazakistan' },
-  { value: 'KE', label: 'Kenya' },
-  { value: 'KI', label: 'Kiribati' },
-  { value: 'KW', label: 'Kuwait' },
-  { value: 'KG', label: 'Kirghizistan' },
-  { value: 'LA', label: 'Laos' },
-  { value: 'LV', label: 'Lettonia' },
-  { value: 'LB', label: 'Libano' },
-  { value: 'LS', label: 'Lesotho' },
-  { value: 'LR', label: 'Liberia' },
-  { value: 'LY', label: 'Libia' },
-  { value: 'LI', label: 'Liechtenstein' },
-  { value: 'LT', label: 'Lituania' },
-  { value: 'LU', label: 'Lussemburgo' },
-  { value: 'MG', label: 'Madagascar' },
-  { value: 'MW', label: 'Malawi' },
-  { value: 'MY', label: 'Malaysia' },
-  { value: 'MV', label: 'Maldive' },
-  { value: 'ML', label: 'Mali' },
-  { value: 'MT', label: 'Malta' },
-  { value: 'MH', label: 'Isole Marshall' },
-  { value: 'MR', label: 'Mauritania' },
-  { value: 'MU', label: 'Mauritius' },
-  { value: 'MX', label: 'Messico' },
-  { value: 'FM', label: 'Micronesia' },
-  { value: 'MD', label: 'Moldavia' },
-  { value: 'MC', label: 'Monaco' },
-  { value: 'MN', label: 'Mongolia' },
-  { value: 'ME', label: 'Montenegro' },
-  { value: 'MA', label: 'Marocco' },
-  { value: 'MZ', label: 'Mozambico' },
-  { value: 'MM', label: 'Myanmar' },
-  { value: 'NA', label: 'Namibia' },
-  { value: 'NR', label: 'Nauru' },
-  { value: 'NP', label: 'Nepal' },
-  { value: 'NL', label: 'Paesi Bassi' },
-  { value: 'NZ', label: 'Nuova Zelanda' },
-  { value: 'NI', label: 'Nicaragua' },
-  { value: 'NE', label: 'Niger' },
-  { value: 'NG', label: 'Nigeria' },
-  { value: 'KP', label: 'Corea del Nord' },
-  { value: 'MK', label: 'Macedonia del Nord' },
-  { value: 'NO', label: 'Norvegia' },
-  { value: 'OM', label: 'Oman' },
-  { value: 'PK', label: 'Pakistan' },
-  { value: 'PW', label: 'Palau' },
-  { value: 'PS', label: 'Palestina' },
-  { value: 'PA', label: 'Panama' },
-  { value: 'PG', label: 'Papua Nuova Guinea' },
-  { value: 'PY', label: 'Paraguay' },
-  { value: 'PE', label: 'Perù' },
-  { value: 'PH', label: 'Filippine' },
-  { value: 'PL', label: 'Polonia' },
-  { value: 'PT', label: 'Portogallo' },
-  { value: 'QA', label: 'Qatar' },
-  { value: 'RO', label: 'Romania' },
-  { value: 'RU', label: 'Russia' },
-  { value: 'RW', label: 'Ruanda' },
-  { value: 'KN', label: 'Saint Kitts e Nevis' },
-  { value: 'LC', label: 'Saint Lucia' },
-  { value: 'VC', label: 'Saint Vincent e Grenadine' },
-  { value: 'WS', label: 'Samoa' },
-  { value: 'SM', label: 'San Marino' },
-  { value: 'ST', label: 'Sao Tome e Principe' },
-  { value: 'SA', label: 'Arabia Saudita' },
-  { value: 'SN', label: 'Senegal' },
-  { value: 'RS', label: 'Serbia' },
-  { value: 'SC', label: 'Seychelles' },
-  { value: 'SL', label: 'Sierra Leone' },
-  { value: 'SG', label: 'Singapore' },
-  { value: 'SK', label: 'Slovacchia' },
-  { value: 'SI', label: 'Slovenia' },
-  { value: 'SB', label: 'Isole Salomone' },
-  { value: 'SO', label: 'Somalia' },
-  { value: 'ZA', label: 'Sudafrica' },
-  { value: 'KR', label: 'Corea del Sud' },
-  { value: 'SS', label: 'Sudan del Sud' },
-  { value: 'ES', label: 'Spagna' },
-  { value: 'LK', label: 'Sri Lanka' },
-  { value: 'SD', label: 'Sudan' },
-  { value: 'SR', label: 'Suriname' },
-  { value: 'SE', label: 'Svezia' },
-  { value: 'CH', label: 'Svizzera' },
-  { value: 'SY', label: 'Siria' },
-  { value: 'TW', label: 'Taiwan' },
-  { value: 'TJ', label: 'Tagikistan' },
-  { value: 'TZ', label: 'Tanzania' },
-  { value: 'TH', label: 'Thailandia' },
-  { value: 'TL', label: 'Timor Est' },
-  { value: 'TG', label: 'Togo' },
-  { value: 'TO', label: 'Tonga' },
-  { value: 'TT', label: 'Trinidad e Tobago' },
-  { value: 'TN', label: 'Tunisia' },
-  { value: 'TR', label: 'Turchia' },
-  { value: 'TM', label: 'Turkmenistan' },
-  { value: 'TV', label: 'Tuvalu' },
-  { value: 'UG', label: 'Uganda' },
-  { value: 'UA', label: 'Ucraina' },
-  { value: 'AE', label: 'Emirati Arabi Uniti' },
-  { value: 'GB', label: 'Regno Unito' },
-  { value: 'US', label: 'Stati Uniti' },
-  { value: 'UY', label: 'Uruguay' },
-  { value: 'UZ', label: 'Uzbekistan' },
-  { value: 'VU', label: 'Vanuatu' },
-  { value: 'VA', label: 'Città del Vaticano' },
-  { value: 'VE', label: 'Venezuela' },
-  { value: 'VN', label: 'Vietnam' },
-  { value: 'YE', label: 'Yemen' },
-  { value: 'ZM', label: 'Zambia' },
-  { value: 'ZW', label: 'Zimbabwe' },
-]
+// Get countries in the selected language
+const getCountries = (language: Language) => {
+  return countries.map(country => ({
+    value: country.code,
+    label: getCountryName(country.code, language)
+  })).sort((a, b) => a.label.localeCompare(b.label, language === 'ru' ? 'ru' : language === 'de' ? 'de' : language === 'fr' ? 'fr' : language === 'es' ? 'es' : language === 'en' ? 'en' : 'it'))
+}
 
 // Document types
 const getDocumentTypes = (t: Translations) => [
   { value: 'carta_identita', label: t.idCard },
   { value: 'passaporto', label: t.passport },
   { value: 'carta_identita_spagnola', label: t.spanishIdCard },
+  { value: 'nie', label: t.nie },
 ]
 
-// Gender options
+// Gender options (only Male and Female)
 const getGenders = (t: Translations) => [
   { value: 'M', label: t.male },
   { value: 'F', label: t.female },
-  { value: 'Altro', label: t.other },
 ]
 
 // Year options for date picker (1925 to current year)
@@ -463,7 +271,7 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
     presenzaMinorenni: z.boolean().default(false),
     relazioniFamigliari: z.string().optional(),
   }).refine((data) => {
-    if (data.tipoDocumento === 'carta_identita_spagnola') {
+    if (data.tipoDocumento === 'carta_identita_spagnola' || data.tipoDocumento === 'nie') {
       return data.numeroSupporto !== undefined && /^[A-Z]{3}[0-9]{6}$/.test(data.numeroSupporto)
     }
     return true
@@ -515,7 +323,7 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
   const tipoDocumento = form.watch('tipoDocumento')
   const presenzaMinorenni = form.watch('presenzaMinorenni')
   const nazionalita = form.watch('nazionalita')
-  const showNumeroSupporto = tipoDocumento === 'carta_identita_spagnola'
+  const showNumeroSupporto = tipoDocumento === 'carta_identita_spagnola' || tipoDocumento === 'nie'
   const isSpanishNationality = nazionalita === 'ES'
 
   async function onSubmit(data: GuestFormValues) {
@@ -575,7 +383,19 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
         {/* Header with Language Switcher */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">{t.title}</h1>
-          <p className="text-slate-600 mb-4">{t.subtitle}</p>
+          <p className="text-slate-600 mb-2">{t.subtitle}</p>
+          <p className="text-sm text-slate-500 mb-2">
+            {t.legalInfo}{' '}
+            <a 
+              href={t.legalLink} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              {t.legalLink}
+            </a>
+          </p>
+          <p className="text-sm font-bold text-slate-700 mb-4">{t.allGuestsRequired}</p>
           <Button 
             variant="outline" 
             size="sm" 
@@ -656,7 +476,7 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="max-h-60">
-                            {countries.map((country) => (
+                            {getCountries(language).map((country) => (
                               <SelectItem key={country.value} value={country.value}>
                                 {country.label}
                               </SelectItem>
@@ -939,16 +759,17 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
                   control={form.control}
                   name="presenzaMinorenni"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">{t.minorsPresent}</FormLabel>
+                      </div>
                       <FormControl>
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          className="h-6 w-6"
                         />
                       </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>{t.minorsPresent}</FormLabel>
-                      </div>
                     </FormItem>
                   )}
                 />
