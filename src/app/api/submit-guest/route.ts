@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import ZAI from 'z-ai-web-dev-sdk'
 import { translations, type Language } from '@/lib/translations'
+import { getCountryNamesForSheet } from '@/lib/countries'
 
 // Helper per validare la richiesta
 function validateFormData(data: unknown, t: typeof translations.it): { valid: boolean; errors: string[] } {
@@ -54,8 +55,8 @@ function validateFormData(data: unknown, t: typeof translations.it): { valid: bo
     errors.push(t.errors.documentNumberRequired)
   }
   
-  // Validazione numero supporto per carta spagnola
-  if (form.tipoDocumento === 'carta_identita_spagnola') {
+  // Validazione numero supporto per carta spagnola e NIE
+  if (form.tipoDocumento === 'carta_identita_spagnola' || form.tipoDocumento === 'nie') {
     if (!form.numeroSupporto || typeof form.numeroSupporto !== 'string' || !/^[A-Z]{3}[0-9]{6}$/.test(form.numeroSupporto)) {
       errors.push(t.errors.supportNumberInvalid)
     }
@@ -115,13 +116,15 @@ async function generateFormattedSummary(data: Record<string, unknown>, language:
       'carta_identita': t.idCard,
       'passaporto': t.passport,
       'carta_identita_spagnola': t.spanishIdCard,
+      'nie': t.nie,
     }
     
     const genderLabels: Record<string, string> = {
       'M': t.male,
       'F': t.female,
-      'Altro': t.other,
     }
+    
+    const countryNames = getCountryNamesForSheet(data.nazionalita as string)
     
     const prompt = `Generate a formatted and professional summary for a guest registration at a tourist accommodation. The data is as follows:
 
@@ -129,7 +132,7 @@ PERSONAL DATA:
 - Name: ${data.nome}
 - Surname: ${data.cognome}
 ${data.secondoCognome ? `- Second Surname: ${data.secondoCognome}` : ''}
-- Nationality: ${data.nazionalita}
+- Nationality: ${countryNames.nameIt} / ${countryNames.nameEs}
 - Date of birth: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT') : 'Not specified'}
 - Gender: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'Not specified'}
 
@@ -140,7 +143,7 @@ CONTACTS:
 DOCUMENT:
 - Type: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'Not specified'}
 - Document Number: ${data.numeroDocumento || 'Not specified'}
-${data.tipoDocumento === 'carta_identita_spagnola' ? `- Support Number: ${data.numeroSupporto}` : ''}
+${(data.tipoDocumento === 'carta_identita_spagnola' || data.tipoDocumento === 'nie') ? `- Support Number: ${data.numeroSupporto}` : ''}
 
 ADDRESS:
 - Street: ${data.via}
@@ -185,14 +188,15 @@ function generateBasicSummary(data: Record<string, unknown>, language: Language)
     'carta_identita': t.idCard,
     'passaporto': t.passport,
     'carta_identita_spagnola': t.spanishIdCard,
+    'nie': t.nie,
   }
   
   const genderLabels: Record<string, string> = {
     'M': t.male,
     'F': t.female,
-    'Altro': t.other,
   }
   
+  const countryNames = getCountryNamesForSheet(data.nazionalita as string)
   const dateLocale = language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT'
   
   return `
@@ -204,7 +208,7 @@ ${'-'.repeat(20)}
 ${t.name}: ${data.nome}
 ${t.surname}: ${data.cognome}
 ${data.secondoCognome ? `${t.secondSurname}: ${data.secondoCognome}` : ''}
-${t.nationality}: ${data.nazionalita}
+${t.nationality}: ${countryNames.nameIt} / ${countryNames.nameEs}
 ${t.birthDate}: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : 'N/A'}
 ${t.gender}: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'N/A'}
 
@@ -217,7 +221,7 @@ ${t.document.toUpperCase()}
 ${'-'.repeat(20)}
 ${t.documentType}: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'N/A'}
 ${t.documentNumber}: ${data.numeroDocumento || 'N/A'}
-${data.tipoDocumento === 'carta_identita_spagnola' ? `${t.supportNumber}: ${data.numeroSupporto}` : ''}
+${(data.tipoDocumento === 'carta_identita_spagnola' || data.tipoDocumento === 'nie') ? `${t.supportNumber}: ${data.numeroSupporto}` : ''}
 
 ${t.address.toUpperCase()}
 ${'-'.repeat(20)}
@@ -253,56 +257,82 @@ async function appendToGoogleSheet(data: Record<string, unknown>): Promise<{ suc
       return { success: false, error: 'GOOGLE_SHEET_ID not configured' }
     }
 
+    // Gestione robusta della chiave privata
+    let privateKey = process.env.GOOGLE_PRIVATE_KEY
+    
+    // Se la chiave è base64 encoded, decodificala
+    if (privateKey.startsWith('LS0tLS')) {
+      privateKey = Buffer.from(privateKey, 'base64').toString('utf-8')
+    }
+    
+    // Gestisce diversi formati di newline escape
+    privateKey = privateKey
+      .replace(/\\n/g, '\n')
+      .replace(/\\r\\n/g, '\n')
+      .replace(/\r\n/g, '\n')
+    
+    // Verifica che la chiave abbia il formato corretto
+    if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+      return { success: false, error: 'Private key format invalid: missing header' }
+    }
+
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        private_key: privateKey,
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
 
     const sheets = google.sheets({ version: 'v4', auth })
     
+    // Ottieni i nomi delle nazioni in italiano e spagnolo
+    const countryNames = getCountryNamesForSheet(data.nazionalita as string)
+    
     // Prepara la riga di dati
     const documentTypeLabels: Record<string, string> = {
       'carta_identita': 'Carta d\'identità',
       'passaporto': 'Passaporto',
       'carta_identita_spagnola': 'Carta d\'identità spagnola',
+      'nie': 'NIE (Numero Identità Straniero)',
     }
     
     const genderLabels: Record<string, string> = {
       'M': 'Maschio',
       'F': 'Femmina',
-      'Altro': 'Altro',
     }
     
     const dateLocale = 'it-IT'
     
+    // Costruisci la riga con TUTTI i campi, lasciando vuoti quelli opzionali mancanti
+    // Questo garantisce l'allineamento corretto delle colonne
     const row = [
-      new Date().toLocaleString(dateLocale),                              // Data registrazione
-      data.nome || '',                                                     // Nome
-      data.cognome || '',                                                  // Cognome
-      data.secondoCognome || '',                                           // Secondo Cognome
-      data.nazionalita || '',                                              // Nazionalità
-      data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : '', // Data Nascita
-      data.email || '',                                                    // Email
-      data.telefono || '',                                                 // Telefono
-      data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : '', // Tipo Documento
-      data.numeroDocumento || '',                                          // Numero Documento
-      data.numeroSupporto || '',                                           // Numero Supporto
-      data.sesso ? genderLabels[data.sesso as string] || data.sesso : '',  // Sesso
-      data.via || '',                                                      // Indirizzo
-      data.citta || '',                                                    // Città
-      data.cap || '',                                                      // CAP
-      data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(dateLocale) : '', // Data Check-in
-      data.presenzaMinorenni ? 'Sì' : 'No',                                // Minori presenti
-      data.relazioniFamigliari || '',                                      // Relazioni famigliari
+      new Date().toLocaleString(dateLocale),                              // Colonna A: Data registrazione
+      data.nome || '',                                                     // Colonna B: Nome
+      data.cognome || '',                                                  // Colonna C: Cognome
+      data.secondoCognome || '',                                           // Colonna D: Secondo Cognome (opzionale)
+      countryNames.nameIt,                                                 // Colonna E: Nazionalità Italiano
+      countryNames.nameEs,                                                 // Colonna F: Nazionalità Spagnolo
+      data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : '', // Colonna G: Data Nascita
+      data.email || '',                                                    // Colonna H: Email
+      data.telefono || '',                                                 // Colonna I: Telefono
+      data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : '', // Colonna J: Tipo Documento
+      data.numeroDocumento || '',                                          // Colonna K: Numero Documento
+      data.numeroSupporto || '',                                           // Colonna L: Numero Supporto (opzionale, per carta spagnola/NIE)
+      data.sesso ? genderLabels[data.sesso as string] || data.sesso : '',  // Colonna M: Sesso
+      data.via || '',                                                      // Colonna N: Indirizzo
+      data.citta || '',                                                    // Colonna O: Città
+      data.cap || '',                                                      // Colonna P: CAP
+      data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(dateLocale) : '', // Colonna Q: Data Check-in
+      data.presenzaMinorenni ? 'Sì' : 'No',                                // Colonna R: Minori presenti
+      data.relazioniFamigliari || '',                                      // Colonna S: Relazioni famigliari (opzionale)
     ]
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'A:R', // Colonne A-R (18 colonne) - without sheet name, uses first sheet
+      range: 'A:S', // Colonne A-S (19 colonne)
       valueInputOption: 'USER_ENTERED',
+      insertDataOption: 'INSERT_ROWS', // Assicura che i dati siano inseriti come nuove righe
       requestBody: {
         values: [row],
       },
