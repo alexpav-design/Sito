@@ -301,7 +301,7 @@ async function appendToGoogleSheet(data: Record<string, unknown>): Promise<{ suc
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'Foglio1!A:R', // Colonne A-R (18 colonne)
+      range: 'Sheet1!A:R', // Colonne A-R (18 colonne)
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [row],
