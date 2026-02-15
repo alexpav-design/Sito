@@ -301,7 +301,7 @@ async function appendToGoogleSheet(data: Record<string, unknown>): Promise<{ suc
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'Sheet1!A:R', // Colonne A-R (18 colonne)
+      range: 'A:R', // Colonne A-R (18 colonne) - without sheet name, uses first sheet
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [row],
@@ -335,11 +335,7 @@ export async function POST(request: NextRequest) {
     const summary = await generateFormattedSummary(body, language)
     
     // Scrivi su Google Sheets
-    const sheetSuccess = await appendToGoogleSheet(body)
-    
-    if (!sheetSuccess) {
-      console.error('Failed to write to Google Sheets')
-    }
+    const sheetResult = await appendToGoogleSheet(body)
     
     // Log per debug
     console.log('=====================================')
@@ -347,10 +343,24 @@ export async function POST(request: NextRequest) {
     console.log('=====================================')
     console.log(`Guest: ${body.nome} ${body.cognome}${body.secondoCognome ? ` ${body.secondoCognome}` : ''}`)
     console.log(`Email: ${body.email}`)
-    console.log(`Google Sheets: ${sheetSuccess ? 'OK' : 'FAILED'}`)
+    console.log(`Google Sheets: ${sheetResult.success ? 'OK' : 'FAILED'}`)
+    if (!sheetResult.success) {
+      console.log(`Error: ${sheetResult.error}`)
+    }
+    console.log(`Sheet ID: ${process.env.GOOGLE_SHEET_ID ? 'configured' : 'NOT configured'}`)
+    console.log(`Service Account: ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ? 'configured' : 'NOT configured'}`)
+    console.log(`Private Key: ${process.env.GOOGLE_PRIVATE_KEY ? 'configured' : 'NOT configured'}`)
     console.log('-------------------------------------')
     console.log(summary)
     console.log('=====================================')
+    
+    // Return error if Google Sheets failed
+    if (!sheetResult.success) {
+      return NextResponse.json(
+        { error: 'Errore nel salvataggio su Google Sheets', details: sheetResult.error },
+        { status: 500 }
+      )
+    }
     
     return NextResponse.json({
       success: true,
