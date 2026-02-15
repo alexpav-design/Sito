@@ -283,18 +283,23 @@ function CustomDatePicker({
   onChange,
   t,
   disabled,
-  error
+  error,
+  years
 }: {
   value: Date | undefined
   onChange: (date: Date | undefined) => void
   t: Translations
   disabled?: boolean
   error?: boolean
+  years?: number[] // Optional: custom year options (defaults to yearOptions)
 }) {
   // Local state for each field - managed locally
   const [year, setYear] = useState<string>('')
   const [month, setMonth] = useState<string>('')
   const [day, setDay] = useState<string>('')
+  
+  // Use provided years or default yearOptions
+  const availableYears = years || yearOptions
   
   // Initialize from prop on mount
   useEffect(() => {
@@ -359,7 +364,7 @@ function CustomDatePicker({
         style={{ minWidth: '100px' }}
       >
         <option value="">{t.selectYear}</option>
-        {yearOptions.map((yr) => (
+        {availableYears.map((yr) => (
           <option key={yr} value={yr.toString()}>
             {yr}
           </option>
@@ -910,6 +915,7 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
                           onChange={field.onChange}
                           t={t}
                           error={!!fieldState.error}
+                          years={checkinYearOptions}
                         />
                       </FormControl>
                       <FormMessage />
