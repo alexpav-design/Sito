@@ -240,12 +240,23 @@ ${new Date().toLocaleString(dateLocale)}
 }
 
 // Funzione per scrivere su Google Sheets
-async function appendToGoogleSheet(data: Record<string, unknown>): Promise<boolean> {
+async function appendToGoogleSheet(data: Record<string, unknown>): Promise<{ success: boolean; error?: string }> {
   try {
+    // Check if environment variables are set
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) {
+      return { success: false, error: 'GOOGLE_SERVICE_ACCOUNT_EMAIL not configured' }
+    }
+    if (!process.env.GOOGLE_PRIVATE_KEY) {
+      return { success: false, error: 'GOOGLE_PRIVATE_KEY not configured' }
+    }
+    if (!process.env.GOOGLE_SHEET_ID) {
+      return { success: false, error: 'GOOGLE_SHEET_ID not configured' }
+    }
+
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
@@ -297,10 +308,11 @@ async function appendToGoogleSheet(data: Record<string, unknown>): Promise<boole
       },
     })
 
-    return true
-  } catch (error) {
-    console.error('Error writing to Google Sheets:', error)
-    return false
+    return { success: true }
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error writing to Google Sheets:', errorMessage)
+    return { success: false, error: errorMessage }
   }
 }
 
