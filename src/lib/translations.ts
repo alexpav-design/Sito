@@ -68,6 +68,7 @@ export const translations = {
     documentNumberPlaceholder: "AA1234567",
     supportNumber: "Numero di Supporto",
     supportNumberPlaceholder: "ABC123456",
+    supportNumberPlaceholderNie: "12345678",
     
     // Document types
     idCard: "Carta di identità",
@@ -127,7 +128,8 @@ export const translations = {
       birthDateFuture: "La data di nascita non può essere nel futuro",
       selectDocumentType: "Seleziona il tipo di documento",
       documentNumberRequired: "Il numero del documento è obbligatorio",
-      supportNumberInvalid: "Il numero di supporto inserito non è valido",
+      supportNumberInvalid: "Il numero di supporto inserito non è valido (formato: 3 lettere + 6 numeri)",
+      supportNumberInvalidNie: "Il numero di supporto NIE deve contenere solo numeri",
       selectGender: "Seleziona il sesso",
       streetMin: "Inserisci la via/piazza e il numero civico",
       cityMin: "Inserisci la città",
@@ -206,6 +208,7 @@ export const translations = {
     documentNumberPlaceholder: "AA1234567",
     supportNumber: "Support Number",
     supportNumberPlaceholder: "ABC123456",
+    supportNumberPlaceholderNie: "12345678",
     
     // Document types
     idCard: "Identity Card",
@@ -265,7 +268,8 @@ export const translations = {
       birthDateFuture: "Date of birth cannot be in the future",
       selectDocumentType: "Please select document type",
       documentNumberRequired: "Document number is required",
-      supportNumberInvalid: "The support number entered is not valid",
+      supportNumberInvalid: "The support number entered is not valid (format: 3 letters + 6 numbers)",
+      supportNumberInvalidNie: "The NIE support number must contain only numbers",
       selectGender: "Please select gender",
       streetMin: "Please enter street and house number",
       cityMin: "Please enter city",
@@ -344,6 +348,7 @@ export const translations = {
     documentNumberPlaceholder: "AA1234567",
     supportNumber: "Número de Soporte",
     supportNumberPlaceholder: "ABC123456",
+    supportNumberPlaceholderNie: "12345678",
     
     // Document types
     idCard: "Documento Nacional de Identidad",
@@ -403,7 +408,8 @@ export const translations = {
       birthDateFuture: "La fecha de nacimiento no puede ser en el futuro",
       selectDocumentType: "Seleccione el tipo de documento",
       documentNumberRequired: "El número de documento es obligatorio",
-      supportNumberInvalid: "El número de soporte introducido no es válido",
+      supportNumberInvalid: "El número de soporte introducido no es válido (formato: 3 letras + 6 números)",
+      supportNumberInvalidNie: "El número de soporte NIE debe contener solo números",
       selectGender: "Seleccione el sexo",
       streetMin: "Ingrese la calle y número",
       cityMin: "Ingrese la ciudad",
@@ -482,6 +488,7 @@ export const translations = {
     documentNumberPlaceholder: "AA1234567",
     supportNumber: "Numéro de Support",
     supportNumberPlaceholder: "ABC123456",
+    supportNumberPlaceholderNie: "12345678",
     
     // Document types
     idCard: "Carte d'Identité",
@@ -541,7 +548,8 @@ export const translations = {
       birthDateFuture: "La date de naissance ne peut pas être dans le futur",
       selectDocumentType: "Veuillez sélectionner le type de document",
       documentNumberRequired: "Le numéro de document est obligatoire",
-      supportNumberInvalid: "Le numéro de support saisi n'est pas valide",
+      supportNumberInvalid: "Le numéro de support saisi n'est pas valide (format: 3 lettres + 6 chiffres)",
+      supportNumberInvalidNie: "Le numéro de support NIE doit contenir uniquement des chiffres",
       selectGender: "Veuillez sélectionner le sexe",
       streetMin: "Veuillez entrer la rue et le numéro",
       cityMin: "Veuillez entrer la ville",
@@ -620,6 +628,7 @@ export const translations = {
     documentNumberPlaceholder: "AA1234567",
     supportNumber: "Unterstützungsnummer",
     supportNumberPlaceholder: "ABC123456",
+    supportNumberPlaceholderNie: "12345678",
     
     // Document types
     idCard: "Personalausweis",
@@ -679,7 +688,8 @@ export const translations = {
       birthDateFuture: "Das Geburtsdatum kann nicht in der Zukunft liegen",
       selectDocumentType: "Bitte wählen Sie den Dokumententyp",
       documentNumberRequired: "Die Dokumentennummer ist erforderlich",
-      supportNumberInvalid: "Die eingegebene Unterstützungsnummer ist ungültig",
+      supportNumberInvalid: "Die eingegebene Unterstützungsnummer ist ungültig (Format: 3 Buchstaben + 6 Ziffern)",
+      supportNumberInvalidNie: "Die NIE-Unterstützungsnummer darf nur Ziffern enthalten",
       selectGender: "Bitte wählen Sie das Geschlecht",
       streetMin: "Bitte geben Sie Straße und Hausnummer ein",
       cityMin: "Bitte geben Sie die Stadt ein",
@@ -758,6 +768,7 @@ export const translations = {
     documentNumberPlaceholder: "AA1234567",
     supportNumber: "Номер Поддержки",
     supportNumberPlaceholder: "ABC123456",
+    supportNumberPlaceholderNie: "12345678",
     
     // Document types
     idCard: "Удостоверение Личности",
@@ -817,7 +828,8 @@ export const translations = {
       birthDateFuture: "Дата рождения не может быть в будущем",
       selectDocumentType: "Пожалуйста, выберите тип документа",
       documentNumberRequired: "Номер документа обязателен",
-      supportNumberInvalid: "Введенный номер поддержки недействителен",
+      supportNumberInvalid: "Введенный номер поддержки недействителен (формат: 3 буквы + 6 цифр)",
+      supportNumberInvalidNie: "Номер поддержки NIE должен содержать только цифры",
       selectGender: "Пожалуйста, выберите пол",
       streetMin: "Пожалуйста, введите улицу и номер дома",
       cityMin: "Пожалуйста, введите город",
