@@ -271,12 +271,22 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
     presenzaMinorenni: z.boolean().default(false),
     relazioniFamigliari: z.string().optional(),
   }).refine((data) => {
-    if (data.tipoDocumento === 'carta_identita_spagnola' || data.tipoDocumento === 'nie') {
+    // Validazione numero supporto per carta identità spagnola (3 lettere + 6 numeri)
+    if (data.tipoDocumento === 'carta_identita_spagnola') {
       return data.numeroSupporto !== undefined && /^[A-Z]{3}[0-9]{6}$/.test(data.numeroSupporto)
     }
     return true
   }, {
     message: t.errors.supportNumberInvalid,
+    path: ['numeroSupporto'],
+  }).refine((data) => {
+    // Validazione numero supporto per NIE (solo numeri)
+    if (data.tipoDocumento === 'nie') {
+      return data.numeroSupporto !== undefined && /^[0-9]+$/.test(data.numeroSupporto)
+    }
+    return true
+  }, {
+    message: t.errors.supportNumberInvalidNie,
     path: ['numeroSupporto'],
   }).refine((data) => {
     if (data.presenzaMinorenni) {
@@ -324,6 +334,7 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
   const presenzaMinorenni = form.watch('presenzaMinorenni')
   const nazionalita = form.watch('nazionalita')
   const showNumeroSupporto = tipoDocumento === 'carta_identita_spagnola' || tipoDocumento === 'nie'
+  const isNIE = tipoDocumento === 'nie'
   const isSpanishNationality = nazionalita === 'ES'
 
   async function onSubmit(data: GuestFormValues) {
@@ -609,10 +620,10 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
                         <FormLabel>{t.supportNumber} {t.required}</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder={t.supportNumberPlaceholder} 
+                            placeholder={isNIE ? t.supportNumberPlaceholderNie : t.supportNumberPlaceholder} 
                             {...field} 
-                            className="uppercase"
-                            onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                            className={isNIE ? '' : 'uppercase'}
+                            onChange={(e) => field.onChange(isNIE ? e.target.value : e.target.value.toUpperCase())}
                           />
                         </FormControl>
                         <FormMessage />
