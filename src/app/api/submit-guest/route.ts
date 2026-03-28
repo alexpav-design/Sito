@@ -55,10 +55,17 @@ function validateFormData(data: unknown, t: typeof translations.it): { valid: bo
     errors.push(t.errors.documentNumberRequired)
   }
   
-  // Validazione numero supporto per carta spagnola e NIE
-  if (form.tipoDocumento === 'carta_identita_spagnola' || form.tipoDocumento === 'nie') {
+  // Validazione numero supporto per carta spagnola (3 lettere + 6 numeri)
+  if (form.tipoDocumento === 'carta_identita_spagnola') {
     if (!form.numeroSupporto || typeof form.numeroSupporto !== 'string' || !/^[A-Z]{3}[0-9]{6}$/.test(form.numeroSupporto)) {
       errors.push(t.errors.supportNumberInvalid)
+    }
+  }
+  
+  // Validazione numero supporto per NIE (solo numeri)
+  if (form.tipoDocumento === 'nie') {
+    if (!form.numeroSupporto || typeof form.numeroSupporto !== 'string' || !/^[0-9]+$/.test(form.numeroSupporto)) {
+      errors.push(t.errors.supportNumberInvalidNie)
     }
   }
   
@@ -131,7 +138,7 @@ async function generateFormattedSummary(data: Record<string, unknown>, language:
 PERSONAL DATA:
 - Name: ${data.nome}
 - Surname: ${data.cognome}
-${data.secondoCognome ? `- Second Surname: ${data.secondoCognome}` : ''}
+ ${data.secondoCognome ? `- Second Surname: ${data.secondoCognome}` : ''}
 - Nationality: ${countryNames.nameIt} / ${countryNames.nameEs}
 - Date of birth: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT') : 'Not specified'}
 - Gender: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'Not specified'}
@@ -143,7 +150,7 @@ CONTACTS:
 DOCUMENT:
 - Type: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'Not specified'}
 - Document Number: ${data.numeroDocumento || 'Not specified'}
-${(data.tipoDocumento === 'carta_identita_spagnola' || data.tipoDocumento === 'nie') ? `- Support Number: ${data.numeroSupporto}` : ''}
+ ${(data.tipoDocumento === 'carta_identita_spagnola' || data.tipoDocumento === 'nie') ? `- Support Number: ${data.numeroSupporto}` : ''}
 
 ADDRESS:
 - Street: ${data.via}
@@ -153,7 +160,7 @@ ADDRESS:
 CHECK-IN:
 - Arrival date: ${data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT') : 'Not specified'}
 
-${data.presenzaMinorenni ? `MINORS:
+ ${data.presenzaMinorenni ? `MINORS:
 - Minors present: Yes
 - Family relations: ${data.relazioniFamigliari}` : '- Minors present: No'}
 
@@ -200,46 +207,46 @@ function generateBasicSummary(data: Record<string, unknown>, language: Language)
   const dateLocale = language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'it-IT'
   
   return `
-${t.title.toUpperCase()}
-${'='.repeat(40)}
+ ${t.title.toUpperCase()}
+ ${'='.repeat(40)}
 
-${t.personalData.toUpperCase()}
-${'-'.repeat(20)}
-${t.name}: ${data.nome}
-${t.surname}: ${data.cognome}
-${data.secondoCognome ? `${t.secondSurname}: ${data.secondoCognome}` : ''}
-${t.nationality}: ${countryNames.nameIt} / ${countryNames.nameEs}
-${t.birthDate}: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : 'N/A'}
-${t.gender}: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'N/A'}
+ ${t.personalData.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.name}: ${data.nome}
+ ${t.surname}: ${data.cognome}
+ ${data.secondoCognome ? `${t.secondSurname}: ${data.secondoCognome}` : ''}
+ ${t.nationality}: ${countryNames.nameIt} / ${countryNames.nameEs}
+ ${t.birthDate}: ${data.dataNascita ? new Date(data.dataNascita as string).toLocaleDateString(dateLocale) : 'N/A'}
+ ${t.gender}: ${data.sesso ? genderLabels[data.sesso as string] || data.sesso : 'N/A'}
 
-${t.contacts.toUpperCase()}
-${'-'.repeat(20)}
-${t.email}: ${data.email}
-${t.phone}: ${data.telefono}
+ ${t.contacts.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.email}: ${data.email}
+ ${t.phone}: ${data.telefono}
 
-${t.document.toUpperCase()}
-${'-'.repeat(20)}
-${t.documentType}: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'N/A'}
-${t.documentNumber}: ${data.numeroDocumento || 'N/A'}
-${(data.tipoDocumento === 'carta_identita_spagnola' || data.tipoDocumento === 'nie') ? `${t.supportNumber}: ${data.numeroSupporto}` : ''}
+ ${t.document.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.documentType}: ${data.tipoDocumento ? documentTypeLabels[data.tipoDocumento as string] || data.tipoDocumento : 'N/A'}
+ ${t.documentNumber}: ${data.numeroDocumento || 'N/A'}
+ ${(data.tipoDocumento === 'carta_identita_spagnola' || data.tipoDocumento === 'nie') ? `${t.supportNumber}: ${data.numeroSupporto}` : ''}
 
-${t.address.toUpperCase()}
-${'-'.repeat(20)}
-${t.street}: ${data.via}
-${t.city}: ${data.citta}
-${t.postalCode}: ${data.cap}
+ ${t.address.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.street}: ${data.via}
+ ${t.city}: ${data.citta}
+ ${t.postalCode}: ${data.cap}
 
-${t.checkin.toUpperCase()}
-${'-'.repeat(20)}
-${t.checkinDate}: ${data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(dateLocale) : 'N/A'}
+ ${t.checkin.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.checkinDate}: ${data.dataCheckin ? new Date(data.dataCheckin as string).toLocaleDateString(dateLocale) : 'N/A'}
 
-${data.presenzaMinorenni ? `${t.minors.toUpperCase()}
-${'-'.repeat(20)}
-${t.minorsPresent}: ✓
-${t.familyRelations}: ${data.relazioniFamigliari}` : `${t.minors.toUpperCase()}\n${'-'.repeat(20)}\n${t.minorsPresent}: ✗`}
+ ${data.presenzaMinorenni ? `${t.minors.toUpperCase()}
+ ${'-'.repeat(20)}
+ ${t.minorsPresent}: ✓
+ ${t.familyRelations}: ${data.relazioniFamigliari}` : `${t.minors.toUpperCase()}\n${'-'.repeat(20)}\n${t.minorsPresent}: ✗`}
 
-${'='.repeat(40)}
-${new Date().toLocaleString(dateLocale)}
+ ${'='.repeat(40)}
+ ${new Date().toLocaleString(dateLocale)}
 `
 }
 
