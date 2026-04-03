@@ -344,11 +344,18 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
     setErrorMessage(null)
 
     try {
-      // Converti le date in formato ISO string per la serializzazione
+      // Converti le date in formato YYYY-MM-DD per evitare problemi di fuso orario
+      const formatDateForServer = (date: Date): string => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+      }
+      
       const payload = {
         ...data,
-        dataNascita: data.dataNascita ? data.dataNascita.toISOString() : null,
-        dataCheckin: data.dataCheckin ? data.dataCheckin.toISOString() : null,
+        dataNascita: data.dataNascita ? formatDateForServer(data.dataNascita) : null,
+        dataCheckin: data.dataCheckin ? formatDateForServer(data.dataCheckin) : null,
         language,
       }
 
@@ -366,7 +373,6 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
         setIsSuccess(true)
         form.reset()
       } else {
-        // Mostra l'errore dettagliato se disponibile
         const errorMsg = result.details 
           ? (Array.isArray(result.details) ? result.details.join('. ') : result.details)
           : (result.error || t.genericError)
@@ -378,7 +384,7 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
       setIsSubmitting(false)
     }
   }
-
+  
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
