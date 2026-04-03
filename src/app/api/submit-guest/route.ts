@@ -4,6 +4,12 @@ import ZAI from 'z-ai-web-dev-sdk'
 import { translations, type Language } from '@/lib/translations'
 import { getCountryNamesForSheet } from '@/lib/countries'
 
+// Helper per parsare una data YYYY-MM-DD come data locale (senza problemi di fuso orario)
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
 // Helper per validare la richiesta
 function validateFormData(data: unknown, t: typeof translations.it): { valid: boolean; errors: string[] } {
   const errors: string[] = []
@@ -102,7 +108,7 @@ function validateFormData(data: unknown, t: typeof translations.it): { valid: bo
   // Validazione data check-in non nel passato
   if (form.dataCheckin) {
     try {
-      const checkinDate = new Date(form.dataCheckin as string)
+      const checkinDate = parseLocalDate(form.dataCheckin as string)
       if (isNaN(checkinDate.getTime())) {
         errors.push('Data di check-in non valida')
       } else {
