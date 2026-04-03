@@ -87,21 +87,35 @@ function validateFormData(data: unknown, t: typeof translations.it): { valid: bo
   
   // Validazione data nascita non nel futuro
   if (form.dataNascita) {
-    const birthDate = new Date(form.dataNascita as string)
-    if (birthDate > new Date()) {
-      errors.push(t.errors.birthDateFuture)
+    try {
+      const birthDate = new Date(form.dataNascita as string)
+      if (isNaN(birthDate.getTime())) {
+        errors.push('Data di nascita non valida')
+      } else if (birthDate > new Date()) {
+        errors.push(t.errors.birthDateFuture)
+      }
+    } catch {
+      errors.push('Data di nascita non valida')
     }
   }
   
   // Validazione data check-in non nel passato
   if (form.dataCheckin) {
-    const checkinDate = new Date(form.dataCheckin as string)
-    const today = new Date()
-    // Normalizza entrambe le date a mezzanotte per confrontare solo giorno/mese/anno
-    const checkinNormalized = new Date(checkinDate.getFullYear(), checkinDate.getMonth(), checkinDate.getDate())
-    const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-    if (checkinNormalized < todayNormalized) {
-      errors.push(t.errors.checkinPast)
+    try {
+      const checkinDate = new Date(form.dataCheckin as string)
+      if (isNaN(checkinDate.getTime())) {
+        errors.push('Data di check-in non valida')
+      } else {
+        const today = new Date()
+        // Normalizza entrambe le date a mezzanotte per confrontare solo giorno/mese/anno
+        const checkinNormalized = new Date(checkinDate.getFullYear(), checkinDate.getMonth(), checkinDate.getDate())
+        const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        if (checkinNormalized < todayNormalized) {
+          errors.push(t.errors.checkinPast)
+        }
+      }
+    } catch {
+      errors.push('Data di check-in non valida')
     }
   }
   
@@ -409,8 +423,9 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Error saving registration:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'An error occurred while saving the registration' },
+      { error: 'Errore durante il salvataggio', details: errorMessage },
       { status: 500 }
     )
   }
