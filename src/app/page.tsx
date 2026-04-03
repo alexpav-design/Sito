@@ -344,12 +344,20 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
     setErrorMessage(null)
 
     try {
+      // Converti le date in formato ISO string per la serializzazione
+      const payload = {
+        ...data,
+        dataNascita: data.dataNascita ? data.dataNascita.toISOString() : null,
+        dataCheckin: data.dataCheckin ? data.dataCheckin.toISOString() : null,
+        language,
+      }
+
       const response = await fetch('/api/submit-guest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...data, language }),
+        body: JSON.stringify(payload),
       })
 
       const result = await response.json()
@@ -358,7 +366,11 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
         setIsSuccess(true)
         form.reset()
       } else {
-        setErrorMessage(result.error || t.genericError)
+        // Mostra l'errore dettagliato se disponibile
+        const errorMsg = result.details 
+          ? (Array.isArray(result.details) ? result.details.join('. ') : result.details)
+          : (result.error || t.genericError)
+        setErrorMessage(errorMsg)
       }
     } catch {
       setErrorMessage(t.connectionError)
