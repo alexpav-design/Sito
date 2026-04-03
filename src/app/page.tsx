@@ -260,9 +260,11 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
     dataCheckin: z.date({
       required_error: t.errors.checkinRequired,
     }).refine((date) => {
+      // Normalizza entrambe le date a mezzanotte per confrontare solo giorno/mese/anno
       const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      return date >= today
+      const checkinNormalized = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      return checkinNormalized >= todayNormalized
     }, {
       message: t.errors.checkinPast,
     }),
