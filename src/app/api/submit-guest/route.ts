@@ -97,8 +97,10 @@ function validateFormData(data: unknown, t: typeof translations.it): { valid: bo
   if (form.dataCheckin) {
     const checkinDate = new Date(form.dataCheckin as string)
     const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    if (checkinDate < today) {
+    // Normalizza entrambe le date a mezzanotte per confrontare solo giorno/mese/anno
+    const checkinNormalized = new Date(checkinDate.getFullYear(), checkinDate.getMonth(), checkinDate.getDate())
+    const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    if (checkinNormalized < todayNormalized) {
       errors.push(t.errors.checkinPast)
     }
   }
