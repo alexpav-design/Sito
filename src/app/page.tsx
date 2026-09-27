@@ -17,8 +17,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { translations, languageNames, type Language, type Translations } from '@/lib/translations'
 import { countries, getCountryName } from '@/lib/countries'
 // Test Sentry - RIMUOVI DOPO IL TEST
-throw new Error("Test Sentry - funziona!");
-// Get countries in the selected language
+useEffect(() => {
+  throw new Error("Test Sentry - funziona!");
+}, []);
 const getCountries = (language: Language) => {
   return countries.map(country => ({
     value: country.code,
