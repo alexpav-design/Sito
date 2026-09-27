@@ -17,12 +17,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { translations, languageNames, type Language, type Translations } from '@/lib/translations'
 import { countries, getCountryName } from '@/lib/countries'
 
-const getCountries = (language: Language) => {
-  return countries.map(country => ({
-    value: country.code,
-    label: getCountryName(country.code, language)
-  })).sort((a, b) => a.label.localeCompare(b.label, language === 'ru' ? 'ru' : language === 'de' ? 'de' : language === 'fr' ? 'fr' : language === 'es' ? 'es' : language === 'en' ? 'en' : 'it'))
+// Get countries in the selected language
+// Pre-calcola le liste per tutte le lingue una volta sola al caricamento del modulo
+// evitando localeCompare ripetuto al momento della selezione
+const countriesByLanguage: Record<Language, { value: string; label: string }[]> = {
+  it: countries.map(c => ({ value: c.code, label: c.nameIt })).sort((a, b) => a.label.localeCompare(b.label, 'it')),
+  en: countries.map(c => ({ value: c.code, label: c.nameEn })).sort((a, b) => a.label.localeCompare(b.label, 'en')),
+  es: countries.map(c => ({ value: c.code, label: c.nameEs })).sort((a, b) => a.label.localeCompare(b.label, 'es')),
+  fr: countries.map(c => ({ value: c.code, label: c.nameFr })).sort((a, b) => a.label.localeCompare(b.label, 'fr')),
+  de: countries.map(c => ({ value: c.code, label: c.nameDe })).sort((a, b) => a.label.localeCompare(b.label, 'de')),
+  ru: countries.map(c => ({ value: c.code, label: c.nameRu })).sort((a, b) => a.label.localeCompare(b.label, 'ru')),
 }
+
+const getCountries = (language: Language) => countriesByLanguage[language]
 
 // Document types
 const getDocumentTypes = (t: Translations) => [
