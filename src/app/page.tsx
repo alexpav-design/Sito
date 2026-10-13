@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2, User, Mail, Phone, FileText, MapPin, Calendar, Users, CheckCircle2, Globe } from 'lucide-react'
@@ -338,9 +338,9 @@ function GuestRegistrationForm({ language, onChangeLanguage }: { language: Langu
     },
   })
 
-  const tipoDocumento = form.watch('tipoDocumento')
-  const presenzaMinorenni = form.watch('presenzaMinorenni')
-  const nazionalita = form.watch('nazionalita')
+  const tipoDocumento = useWatch({ control: form.control, name: 'tipoDocumento' })
+  const presenzaMinorenni = useWatch({ control: form.control, name: 'presenzaMinorenni' })
+  const nazionalita = useWatch({ control: form.control, name: 'nazionalita' })
   const showNumeroSupporto = tipoDocumento === 'carta_identita_spagnola' || tipoDocumento === 'nie'
   const isNIE = tipoDocumento === 'nie'
   const isSpanishNationality = nazionalita === 'ES'
